@@ -1,0 +1,123 @@
+import cv2
+import numpy as np
+import os
+from pre_processsing.preprocessing import Preprocessing
+from pre_processsing.filter_gabor import FilterGabor
+from pre_processsing.hog_descriptor import HogDescriptor
+
+class Training:
+    def __init__(self):
+        self.path_dir_image_fire = "../resources/images/fire/"
+        self.path_dir_image_smoke = "../resources/images/smoke/"
+        self.path_dir_image_false_positive = "../resources/images/false_positive/"
+        self.preprocessing = Preprocessing()
+        self.filter_gabor = FilterGabor()
+        self.hog_descriptor = HogDescriptor()
+        self.label_fire = 1
+        self.label_smoke = 2
+        self.label_false_positive = -2
+
+
+    def load_data(self, path_dir, label, apply_preprocessing_fire):
+        list_image = []
+        list_label = []
+        for file in os.listdir(path_dir):
+            image = cv2.imread(path_dir + file)
+            image = cv2.resize(image, (64, 64))
+            if apply_preprocessing_fire:
+                _, image = self.preprocessing.cut_out_backgound(image)
+            else:
+                image = self.preprocessing.highlight_smoke_features(image)
+            list_image.append(image)
+            list_label.append(label)
+        return list_image, list_label
+
+    def split_data_by_train(self, list_descriptor, list_label):
+        size_list = len(list_descriptor)
+        list_by_train, list_by_test = np.split(list_descriptor, [int(size_list * 0.8)])
+        labels_by_train, labels_by_test = np.split(list_label, [int(size_list * 0.8)])
+        size_list_test = len(list_by_test)
+        list_by_test, list_cross_validation = np.split(list_by_test, [int(size_list_test * 0.5)])
+        labels_by_test, labels_cross_validation = np.split(labels_by_test, [int(size_list_test * 0.5)])
+        #print "image_test 0.1", len(list_by_test)
+
+        list_by_train = np.concatenate([list_by_train, list_cross_validation])
+        list_by_test = np.concatenate([list_by_test, list_cross_validation])
+
+        labels_by_train = np.concatenate([labels_by_train, labels_cross_validation])
+        labels_by_test = np.concatenate([labels_by_test, labels_cross_validation])
+        return (list_by_train, list_by_test, labels_by_train, labels_by_test)
+
+
+    def train(self, list_descriptor, list_label, list_descriptor_test, list_label_test, gamma, C, path_train, minimum):
+        svm_params = dict(kernel_type=cv2.SVM_RBF,
+                          svm_type=cv2.SVM_C_SVC,
+                          degree=3,
+                          coef0=0.0,
+                          term_crit=(cv2.TERM_CRITERIA_MAX_ITER + cv2.TERM_CRITERIA_EPS, 1000, 1e-3),
+                          gamma=gamma,
+                          nu=0.5,
+                          p=0.1,
+                          Cvalue=C)
+        svm = cv2.SVM()
+        responses = np.array(list_label)
+        svm.train(list_descriptor, responses, None, None, params=svm_params)
+        svm.save(path_train)
+        svm.load(path_train)
+        test_hog = list_descriptor_test
+        resp = svm.predict_all(test_hog).ravel()
+        err = (list_label_test != resp).mean()
+        if (err < minimum):
+            minimum = err
+        return gamma, C, minimum
+
+    def generate_data_descriptor_training(self, path_dir, label, state):
+        list_image, list_label = self.load_data(path_dir, label, state)
+        list_descriptor = self.hog_descriptor.get_list_hog_descriptors(list_image)
+        (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.split_data_by_train(list_descriptor, list_label)
+        return (list_by_train, list_by_test, labels_by_train, labels_by_test)
+
+
+    def generate_data_training(self, path_to_train, label, type_train):
+        (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_descriptor_training(path_to_train, label, type_train)
+        (list_by_train_fp, list_by_test_fp, labels_by_train_fp, labels_by_test_fp) = self.generate_data_descriptor_training(self.path_dir_image_false_positive, self.label_false_positive, type_train)
+        list_by_train= np.concatenate([list_by_train, list_by_train_fp])
+        labels_by_train = np.concatenate([labels_by_train, labels_by_train_fp])
+        list_by_test = np.concatenate([list_by_test, list_by_test_fp])
+        labels_by_test =np.concatenate([labels_by_test, labels_by_test_fp])
+        return (list_by_train, labels_by_train, list_by_test, labels_by_test)
+
+
+    def generate_training(self, type_train):
+        if(type_train):
+            path_train = "../resources/training/fire/train"
+            (list_by_train, labels_by_train, list_by_test, labels_by_test) = self.generate_data_training(self.path_dir_image_fire,self.label_fire, type_train)
+        else:
+            path_train = "../resources/training/smoke/train"
+            (list_by_train, labels_by_train, list_by_test, labels_by_test) = self.generate_data_training(self.path_dir_image_smoke, self.label_smoke, type_train)
+        self.save_training(list_by_train, labels_by_train, list_by_test, labels_by_test, (-15,3), (-10,10), path_train)
+
+
+    def save_training(self, list_descriptor, list_label, list_descriptor_test, list_label_test, range_gamma, range_C, path_train, minimum_error = 1):
+        (min_gamma, max_gamma) = range_gamma
+        (min_C, max_C) = range_C
+        path_default = path_train+"_prueba.xml"
+        for i in range(min_gamma, max_gamma, 1):
+            for j in range(min_C, max_C, 1):
+                gamma, C, error = self.train(list_descriptor, list_label, list_descriptor_test, list_label_test, 2**(i), 2**(j), path_default, minimum_error)
+                if(error < minimum_error):
+                    minimum_error = error
+                    print 'gamma = ' + str(gamma) + "   C = " + str(C)
+                    print 'error: %.2f %%' % (error * 100)
+                    val_gamma = gamma
+                    val_C = C
+        path_train = path_train+"_"+str(minimum_error*100)+"%.xml"
+        self.train(list_descriptor, list_label, list_descriptor_test, list_label_test, val_gamma, val_C, path_train, minimum_error)
+        os.remove(path_default)
+
+if __name__ == '__main__':
+    training = Training()
+
+    # If type train is True, it will generate a train of FIRE, otherwise, of SMOKE
+    type_train = True
+    training.generate_training(type_train)

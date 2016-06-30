@@ -15,7 +15,7 @@ class Preprocessing:
         image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(image_hsv, self.LOWER_RED, self.UPPER_RED)
         image_no_backgrund = cv2.bitwise_and(image, image, mask=mask)
-        return image_no_backgrund
+        return mask, image_no_backgrund
 
     def convert_image_nbits(self, image, x, y, z):
         image = np.array(image)

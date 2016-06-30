@@ -3,7 +3,7 @@ import cv2
 
 class HogDescriptor():
 
-    def get_list_hog_descriptors(self, list, winSize, blockSize, blockStride, cellSize, nbins ):
+    def get_list_hog_descriptors(self, list, winSize=(64, 64), blockSize=(16, 16), blockStride=(8, 8), cellSize=(8, 8), nbins=9):
         hog = cv2.HOGDescriptor(winSize, blockSize, blockStride, cellSize, nbins)
         if(len(list) > 0):
             first_image = cv2.resize(list[0], winSize)
