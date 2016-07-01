@@ -1,9 +1,11 @@
 import cv2
 import numpy as np
 import os
+import time
 from pre_processsing.preprocessing import Preprocessing
 from pre_processsing.filter_gabor import FilterGabor
 from pre_processsing.hog_descriptor import HogDescriptor
+from pre_processsing.segmentation import Segmentation
 
 class Training:
     def __init__(self):
@@ -13,6 +15,7 @@ class Training:
         self.preprocessing = Preprocessing()
         self.filter_gabor = FilterGabor()
         self.hog_descriptor = HogDescriptor()
+        self.segmentation = Segmentation()
         self.label_fire = 1
         self.label_smoke = 2
         self.label_false_positive = -2
@@ -23,14 +26,31 @@ class Training:
         list_label = []
         for file in os.listdir(path_dir):
             image = cv2.imread(path_dir + file)
-            image = cv2.resize(image, (64, 64))
             if apply_preprocessing_fire:
-                _, image = self.preprocessing.cut_out_backgound(image)
+                mask, image = self.preprocessing.cut_out_backgound(image)
+
+                mat_points = self.segmentation.map_out(mask, image)
+                list = self.load_segment_image(mat_points, image)
+                for j in range(0, len(list)):
+                    image_64 = cv2.resize(list[j], (64, 64))
+                    list[j]=image_64
+                    list_image.append(list[j])
+                    list_label.append(label)
             else:
                 image = self.preprocessing.highlight_smoke_features(image)
-            list_image.append(image)
-            list_label.append(label)
+                list_image.append(image)
+                list_label.append(label)
+        cv2.destroyAllWindows()
         return list_image, list_label
+
+    def load_segment_image(self, mat_points, image):
+        list =[]
+        for (x, y, w, h) in mat_points:
+            subMat = image[y:h, x:w]
+            subMat = cv2.resize(subMat, (64, 64))
+            list.append(subMat)
+        return list
+
 
     def split_data_by_train(self, list_descriptor, list_label):
         size_list = len(list_descriptor)
@@ -39,7 +59,6 @@ class Training:
         size_list_test = len(list_by_test)
         list_by_test, list_cross_validation = np.split(list_by_test, [int(size_list_test * 0.5)])
         labels_by_test, labels_cross_validation = np.split(labels_by_test, [int(size_list_test * 0.5)])
-        #print "image_test 0.1", len(list_by_test)
 
         list_by_train = np.concatenate([list_by_train, list_cross_validation])
         list_by_test = np.concatenate([list_by_test, list_cross_validation])

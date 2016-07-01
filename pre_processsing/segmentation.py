@@ -17,7 +17,7 @@ class Segmentation:
         contours, inheriters = cv2.findContours(img_bin, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         for c in contours:
             moments = cv2.moments(c)
-            if moments['m00'] > 400:
+            if moments['m00'] > 200:
                 x = []
                 y = []
                 for i in c:

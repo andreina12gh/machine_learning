@@ -9,7 +9,7 @@ class Detector:
         self.hog = HogDescriptor()
         self.segmentation = Segmentation()
         self.model = cv2.SVM()
-        self.path_train_fire = "../resources/training/fire/train_2.77777777778%.xml"
+        self.path_train_fire = "/home/evelyn/machine_learning/resources/training/fire/train_12.5475285171%.xml"
         self.label_fire = 1
         self.COLOR_FIRE = (0,0,255)
 
@@ -22,7 +22,7 @@ class Detector:
         mat_points, image_no_background = self.segmentation.segment(image)
         if load_train:
             self.load_train(self.path_train_fire)
-        detected_image = self.get_submats(mat_points,image_no_background, image, self.label_fire, self.COLOR_FIRE)
+        detected_image = self.get_submats(mat_points, image_no_background, image, self.label_fire, self.COLOR_FIRE)
         return  detected_image
 
 
@@ -32,8 +32,8 @@ class Detector:
             subMat = cv2.resize(subMat, (64, 64))
             [descriptors] = self.hog.get_list_hog_descriptors([subMat])
             result = self.model.predict(descriptors)
-            if result==label:
-                cv2.rectangle(image,(x,y),(w,h),color,1)
+            if result == label:
+                cv2.rectangle(image, (x,y), (w,h), color,1)
         return image
 
 
