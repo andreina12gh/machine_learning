@@ -1,15 +1,16 @@
 import cv2
 import numpy as np
 import os
-import time
 from pre_processsing.preprocessing import Preprocessing
 from pre_processsing.filter_gabor import FilterGabor
 from pre_processsing.hog_descriptor import HogDescriptor
 from pre_processsing.segmentation import Segmentation
 
+
 class Training:
     def __init__(self):
         self.path_dir_image_fire = "../resources/images/fire/"
+        self.path_dir_image_fire_1 = "../resources/images/fire_1/"
         self.path_dir_image_smoke = "../resources/images/smoke/"
         self.path_dir_image_false_positive = "../resources/images/false_positive/"
         self.preprocessing = Preprocessing()
@@ -21,20 +22,23 @@ class Training:
         self.label_false_positive = -2
 
 
-    def load_data(self, path_dir, label, apply_preprocessing_fire):
+    def load_data(self, path_dir, label, apply_preprocessing_fire, segment):
         list_image = []
         list_label = []
         for file in os.listdir(path_dir):
             image = cv2.imread(path_dir + file)
             if apply_preprocessing_fire:
                 mask, image = self.preprocessing.cut_out_backgound(image)
-
-                mat_points = self.segmentation.map_out(mask, image)
-                list = self.load_segment_image(mat_points, image)
-                for j in range(0, len(list)):
-                    image_64 = cv2.resize(list[j], (64, 64))
-                    list[j]=image_64
-                    list_image.append(list[j])
+                if segment:
+                    mat_points = self.segmentation.map_out(mask, image)
+                    list = self.load_segment_image(mat_points, image)
+                    for j in range(0, len(list)):
+                        image_64 = cv2.resize(list[j], (64, 64))
+                        list[j]=image_64
+                        list_image.append(list[j])
+                        list_label.append(label)
+                else:
+                    list_image.append(image)
                     list_label.append(label)
             else:
                 image = self.preprocessing.highlight_smoke_features(image)
@@ -42,6 +46,7 @@ class Training:
                 list_label.append(label)
         cv2.destroyAllWindows()
         return list_image, list_label
+
 
     def load_segment_image(self, mat_points, image):
         list =[]
@@ -79,8 +84,8 @@ class Training:
                           p=0.1,
                           Cvalue=C)
         svm = cv2.SVM()
-        responses = np.array(list_label)
-        svm.train(list_descriptor, responses, None, None, params=svm_params)
+        #responses = np.array(list_label)
+        svm.train(list_descriptor, list_label, None, None, params=svm_params)
         svm.save(path_train)
         svm.load(path_train)
         test_hog = list_descriptor_test
@@ -90,31 +95,51 @@ class Training:
             minimum = err
         return gamma, C, minimum
 
-    def generate_data_descriptor_training(self, path_dir, label, state):
-        list_image, list_label = self.load_data(path_dir, label, state)
+
+    def generate_data_descriptor_training(self, path_dir, label, state, segment):
+        list_image, list_label = self.load_data(path_dir, label, state, segment)
         list_descriptor = self.hog_descriptor.get_list_hog_descriptors(list_image)
         (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.split_data_by_train(list_descriptor, list_label)
         return (list_by_train, list_by_test, labels_by_train, labels_by_test)
 
 
-    def generate_data_training(self, path_to_train, label, type_train):
-        (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_descriptor_training(path_to_train, label, type_train)
-        (list_by_train_fp, list_by_test_fp, labels_by_train_fp, labels_by_test_fp) = self.generate_data_descriptor_training(self.path_dir_image_false_positive, self.label_false_positive, type_train)
-        list_by_train= np.concatenate([list_by_train, list_by_train_fp])
-        labels_by_train = np.concatenate([labels_by_train, labels_by_train_fp])
-        list_by_test = np.concatenate([list_by_test, list_by_test_fp])
-        labels_by_test =np.concatenate([labels_by_test, labels_by_test_fp])
-        return (list_by_train, labels_by_train, list_by_test, labels_by_test)
+    def generate_data_training(self, list_path_to_train, label, type_train, segment):
+        (list_training, list_testing, labels_training, labels_testing) = self.get_list_training(list_path_to_train, label, type_train, segment)
+        (list_training_fp, list_testing_fp, labels_training_fp, labels_testing_fp) = self.get_list_training([self.path_dir_image_false_positive], self.label_false_positive, type_train, segment)
+        list_training = np.concatenate([list_training, list_training_fp])
+        labels_training = np.concatenate([labels_training, labels_training_fp])
+        list_testing = np.concatenate([list_testing, list_testing_fp])
+        labels_testing =np.concatenate([labels_testing, labels_testing_fp])
+        return (list_training, list_testing, labels_training, labels_testing)
+
+    def get_list_training(self, list_path_to_train, label, type_train, segment):
+        first = True
+        for path_train in list_path_to_train:
+            (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_descriptor_training(path_train, label, type_train, segment)
+            if(first):
+                list_training = list_by_train
+                list_testing = list_by_test
+                labels_training = labels_by_train
+                labels_testing = labels_by_test
+                first = False
+            else:
+                list_training = np.concatenate([list_training, list_by_train])
+                list_testing = np.concatenate([list_testing, list_by_test])
+                labels_training = np.concatenate([labels_training, labels_by_train])
+                labels_testing = np.concatenate([labels_testing, labels_by_test])
+
+        return (list_training, list_testing, labels_training, labels_testing)
 
 
-    def generate_training(self, type_train):
+    def generate_training(self, type_train, segment):
         if(type_train):
             path_train = "../resources/training/fire/train"
-            (list_by_train, labels_by_train, list_by_test, labels_by_test) = self.generate_data_training(self.path_dir_image_fire,self.label_fire, type_train)
+            list_path_dir = [self.path_dir_image_fire, self.path_dir_image_fire_1]
+            (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_training(list_path_dir,self.label_fire, type_train, segment)
         else:
             path_train = "../resources/training/smoke/train"
-            (list_by_train, labels_by_train, list_by_test, labels_by_test) = self.generate_data_training(self.path_dir_image_smoke, self.label_smoke, type_train)
-        self.save_training(list_by_train, labels_by_train, list_by_test, labels_by_test, (-15,3), (-10,10), path_train)
+            (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_training([self.path_dir_image_smoke], self.label_smoke, type_train, segment)
+        self.save_training(list_by_train, labels_by_train, list_by_test, labels_by_test, (-15, 3), (-10, 10), path_train)
 
 
     def save_training(self, list_descriptor, list_label, list_descriptor_test, list_label_test, range_gamma, range_C, path_train, minimum_error = 1):
@@ -134,9 +159,11 @@ class Training:
         self.train(list_descriptor, list_label, list_descriptor_test, list_label_test, val_gamma, val_C, path_train, minimum_error)
         os.remove(path_default)
 
+
 if __name__ == '__main__':
     training = Training()
-
     # If type train is True, it will generate a train of FIRE, otherwise, of SMOKE
     type_train = True
-    training.generate_training(type_train)
+    segment = True
+
+    training.generate_training(type_train, segment)

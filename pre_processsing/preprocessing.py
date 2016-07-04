@@ -60,3 +60,20 @@ class Preprocessing:
         image_gabor = np.array(image_gabor, dtype=np.uint8)
         return image_gabor
 
+
+    def aply_threshold(self, layer, thresh_min, thresh_max):
+        _, image_binary = cv2.threshold(layer, thresh_min, thresh_max, cv2.THRESH_BINARY)
+        return image_binary
+
+
+    def get_mask_brightness(self, image):
+        image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(image_hsv)
+        image_bin_v = self.aply_threshold(v, 100, 255)
+        return image_bin_v
+
+    def get_image_brightness(self, image):
+        mask_layer_v = self.get_mask_brightness(image)
+        image_no_background = cv2.bitwise_and(image, image, mask=mask_layer_v)
+        _, image_no_background = self.cut_out_backgound(image_no_background)
+        return image_no_background
