@@ -12,6 +12,8 @@ def testing_detected(path_video):
     while(1):
         _, frame = capture.read()
         frame = cv2.resize(frame, (640, 480))
+        #comment the line of down if the image is readed automatically in the model of color BGR
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         if detect_segment:
             frame_detected = detector.detect_fire_segment(frame, load_train)
         else:
@@ -26,4 +28,4 @@ def testing_detected(path_video):
 
     cv2.destroyAllWindows()
 
-testing_detected("/home/evelyn/Documents/Fabrica/SVMHOG/Videos/escena13.mp4")
+testing_detected("/home/Mauri/Documents/videos/escena13.mp4")
