@@ -1,4 +1,4 @@
 *.pyc
-/.idea/workspace.xml
-/.idea/Machine_Learning.iml
-/.idea/misc.xml
+.idea/workspace.xml
+.idea/Machine_Learning.iml
+.idea/misc.xml
