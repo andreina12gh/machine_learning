@@ -12,10 +12,14 @@ class Preprocessing:
         self.UPPER_GRAY = np.array([255, 255, 255])
 
     def cut_out_backgound(self, image):
-        image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(image_hsv, self.LOWER_RED, self.UPPER_RED)
+        mask = self.enhance_color(self.LOWER_RED, self.UPPER_RED, image)
         image_no_backgrund = cv2.bitwise_and(image, image, mask=mask)
         return mask, image_no_backgrund
+
+    def enhance_color(self, lower, upper, image):
+        image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(image_hsv, lower, upper)
+        return mask
 
     def convert_image_nbits(self, image, x, y, z):
         image = np.array(image)
@@ -60,6 +64,16 @@ class Preprocessing:
         image_gabor = np.array(image_gabor, dtype=np.uint8)
         return image_gabor
 
+    def border_image(self, mask):
+        kernel = np.ones((6,6),np.uint8)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        blur = cv2.GaussianBlur(mask,(5,5),0)
+        cany = cv2.Canny(blur,1,1)
+        cany = cv2.dilate(cany, np.ones((3,3)), iterations=2)
+        cany = cv2.erode(cany, np.ones((3,3)), iterations= 1)
+        contours, hier = cv2.findContours(blur, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        return contours, cany
 
     def apply_threshold(self, layer, thresh_min, thresh_max):
         _, image_binary = cv2.threshold(layer, thresh_min, thresh_max, cv2.THRESH_BINARY)
@@ -77,3 +91,18 @@ class Preprocessing:
         image_no_background = cv2.bitwise_and(image, image, mask=mask_layer_v)
         _, image_no_background = self.cut_out_backgound(image_no_background)
         return image_no_background
+
+    def draw_image(self, image, type, data, color):
+        #if type = 1 is an rectangle
+        if(type == 1):
+            [(x_min, y_min), (x_max, y_max)] = data
+            cv2.rectangle(image, (x_min, y_min), (x_max, y_max), color, 2)
+        #if type = 2 is an polygon
+        elif(type == 2):
+            approx = cv2.approxPolyDP(data, 0.05 * cv2.arcLength(data, True), True)
+            if len(approx) == 3:
+                cv2.drawContours(image, [data], 0, color, 2)
+        #if type = 3 is an text
+        else:
+            cv2.putText(image, data,(20,20), cv2.FONT_HERSHEY_COMPLEX, 1.5, color)
+        return image
