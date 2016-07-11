@@ -61,7 +61,7 @@ class Preprocessing:
         return image_gabor
 
 
-    def aply_threshold(self, layer, thresh_min, thresh_max):
+    def apply_threshold(self, layer, thresh_min, thresh_max):
         _, image_binary = cv2.threshold(layer, thresh_min, thresh_max, cv2.THRESH_BINARY)
         return image_binary
 
@@ -69,7 +69,7 @@ class Preprocessing:
     def get_mask_brightness(self, image):
         image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         h, s, v = cv2.split(image_hsv)
-        image_bin_v = self.aply_threshold(v, 100, 255)
+        image_bin_v = self.apply_threshold(v, 100, 255)
         return image_bin_v
 
     def get_image_brightness(self, image):

@@ -12,6 +12,7 @@ class Training:
         self.path_dir_image_fire = "../resources/images/fire/"
         self.path_dir_image_fire_1 = "../resources/images/fire_1/"
         self.path_dir_image_smoke = "../resources/images/smoke/"
+        self.path_dir_image_smoke_1 = "../resources/images/smoke_1/"
         self.path_dir_image_false_positive = "../resources/images/false_positive/"
         self.preprocessing = Preprocessing()
         self.filter_gabor = FilterGabor()
@@ -29,21 +30,23 @@ class Training:
             image = cv2.imread(path_dir + file)
             if apply_preprocessing_fire:
                 mask, image = self.preprocessing.cut_out_backgound(image)
-                if segment:
-                    mat_points = self.segmentation.map_out(mask, image)
-                    list = self.load_segment_image(mat_points, image)
-                    for j in range(0, len(list)):
-                        image_64 = cv2.resize(list[j], (64, 64))
-                        list[j]=image_64
-                        list_image.append(list[j])
-                        list_label.append(label)
-                else:
-                    list_image.append(image)
-                    list_label.append(label)
             else:
                 image = self.preprocessing.highlight_smoke_features(image)
+            if segment:
+                mat_points = self.segmentation.map_out(mask, image)
+                list = self.load_segment_image(mat_points, image)
+                for j in range(0, len(list)):
+                    image_64 = cv2.resize(list[j], (64, 64))
+                    list[j]=image_64
+                    list_image.append(list[j])
+                    list_label.append(label)
+            else:
                 list_image.append(image)
                 list_label.append(label)
+            ''''else:
+                image = self.preprocessing.highlight_smoke_features(image)
+                list_image.append(image)
+                list_label.append(label)'''
         cv2.destroyAllWindows()
         return list_image, list_label
 
@@ -131,14 +134,15 @@ class Training:
         return (list_training, list_testing, labels_training, labels_testing)
 
 
-    def generate_training(self, type_train, segment):
-        if(type_train):
+    def generate_training(self, type_train_fire, segment):
+        if(type_train_fire):
             path_train = "../resources/training/fire/train"
             list_path_dir = [self.path_dir_image_fire, self.path_dir_image_fire_1]
-            (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_training(list_path_dir,self.label_fire, type_train, segment)
+            (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_training(list_path_dir, self.label_fire, type_train_fire, segment)
         else:
             path_train = "../resources/training/smoke/train"
-            (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_training([self.path_dir_image_smoke], self.label_smoke, type_train, segment)
+            list_path_dir = [self.path_dir_image_smoke, self.path_dir_image_smoke_1]
+            (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_training(list_path_dir, self.label_smoke, type_train_fire, segment)
         self.save_training(list_by_train, labels_by_train, list_by_test, labels_by_test, (-15, 3), (-10, 10), path_train)
 
 
@@ -163,7 +167,7 @@ class Training:
 if __name__ == '__main__':
     training = Training()
     # If type train is True, it will generate a train of FIRE, otherwise, of SMOKE
-    type_train = True
-    segment = True
+    type_train_fire = False
+    segment = False
 
-    training.generate_training(type_train, segment)
+    training.generate_training(type_train_fire, segment)
