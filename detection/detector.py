@@ -11,6 +11,7 @@ class Detector:
         self.model = cv2.SVM()
         self.path_train_fire_no_segmented = "../resources/training/fire/train_2.77777777778%.xml"
         self.path_train_fire_segmented = "../resources/training/fire/train_9.5652173913%.xml"
+        self.path_train_smoke_no_segmented = "../resources/training/smoke/train_10.6060606061%.xml"
         self.LABEL_FIRE = 1
         self.LABEL_SMOKE = 2
         self.COLOR_FIRE = (0,0,255)
@@ -53,13 +54,38 @@ class Detector:
 
     def get_submats(self, mat_points, image_no_background, image, label, color):
         for (x, y, w, h) in mat_points:
-            subMat = image_no_background[y:h, x:w]
-            subMat = cv2.resize(subMat, (64, 64))
-            [descriptors] = self.hog.get_list_hog_descriptors([subMat])
-            result = self.model.predict(descriptors)
-            if result == label:
-                cv2.rectangle(image, (x,y), (w,h), color,1)
+            (x, w) = self.swap_points(x, w)
+            (y, h) = self.swap_points(y, h)
+            if (x is not None and y is not None):
+                subMat = image_no_background[y:h, x:w]
+                subMat = cv2.resize(subMat, (64, 64))
+                [descriptors] = self.hog.get_list_hog_descriptors([subMat])
+                result = self.model.predict(descriptors)
+                if result == label:
+                    cv2.rectangle(image, (x,y), (w,h), color,1)
         return image
+
+    def swap_points(self, x1, x2):
+        if x2 < x1:
+            aux_x1 = x1
+            x1 = x2
+            x2 = aux_x1
+            res = (x1, x2)
+        elif x2 == x1:
+            res = (None, None)
+        else:
+            res = (x1, x2)
+        return res
+
+    def detect_smoke_segment(self, image, load_train = True):
+        image_d, cany, mat_points = self.segmentation.highlight_smoke_contours(image)
+        if load_train:
+            self.load_train(self.path_train_smoke_no_segmented)
+        image_res = self.get_submats(mat_points, image_d, image, self.LABEL_SMOKE, self.COLOR_SMOKE)
+        return image_res
+
+    def detect_smoke(self):
+        pass
 
 
 if __name__ == '__main__':

@@ -32,18 +32,18 @@ class Segmentation:
 
     def get_points_min_max(self, array):
         x, y = cv2.split(array)
-        min_x = min(x)
+        min_x = min(x)[0]
         x = list(x)
         pos_min_x = x.index(min_x)
-        min_y = y[pos_min_x]
-        max_x = max(x)
+        min_y = y[pos_min_x][0]
+        max_x = max(x)[0]
         pos_max_x = x.index(max_x)
-        max_y = y[pos_max_x]
+        max_y = y[pos_max_x][0]
         return (min_x, min_y),(max_x, max_y)
 
     def highlight_smoke_contours(self, image):
         mask = self.pre_processing.enhance_color(self.LOWER_GRAY_2, self.UPPER_GRAY_2, image)
-        contours, cany = self.pre_processing.border_image(mask)
+        contours, cany = self.pre_processing.border_image(mask, image)
         i = 0
         sub_mats = []
         for c in contours:
@@ -51,7 +51,7 @@ class Segmentation:
             if extension > 600:
                 contour = contours[i]
                 (x_min, y_min), (x_max, y_max) = self.get_points_min_max(contour)
-                sub_mats.append([(x_min, y_min), (x_max, y_max)])
+                sub_mats.append((x_min, y_min, x_max, y_max))
                 self.pre_processing.draw_image(image, 1, [(x_min, y_min), (x_max, y_max)], (255,0,0))
                 self.pre_processing.draw_image(image, 2, contour, (0,255,0))
                 self.pre_processing.draw_image(cany, 2, contour,(0,255,0))

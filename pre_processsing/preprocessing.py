@@ -64,15 +64,27 @@ class Preprocessing:
         image_gabor = np.array(image_gabor, dtype=np.uint8)
         return image_gabor
 
-    def border_image(self, mask):
+    def border_image(self, mask, image):
         kernel = np.ones((6,6),np.uint8)
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        img1 = cv2.bitwise_and(image, image, mask=mask)
+        cv2.imshow("img1", img1)
+        gray_image = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        gray_image = np.array(gray_image, dtype=np.float32)
+        norm_gray_image = gray_image / 255.
+        #cv2.imshow("img1", norm_gray_image)
+        img1 = self.filter_gabor.apply_filter(norm_gray_image, ks=21, sig=5, lm=1.3, th=90, ps=88)
+        cv2.imshow("can", img1)
+        #mask = cv2.morphologyEx(img1, cv2.MORPH_CLOSE, kernel)
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        #cv2.imshow("mas", mask)
         blur = cv2.GaussianBlur(mask,(5,5),0)
         cany = cv2.Canny(blur,1,1)
-        cany = cv2.dilate(cany, np.ones((3,3)), iterations=2)
-        cany = cv2.erode(cany, np.ones((3,3)), iterations= 1)
-        contours, hier = cv2.findContours(blur, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        cany = cv2.bitwise_not(cany, cany, cv2.bitwise_not((0)*cany))
+        #cany = cv2.dilate(cany, np.ones((3,3)), iterations=2)
+        #cany = cv2.erode(cany, np.ones((3,3)), iterations= 1)
+        #cv2.imshow("canyyyy", cany)
+        #cv2.imshow("blur", blur)
+        contours, hier = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         return contours, cany
 
     def apply_threshold(self, layer, thresh_min, thresh_max):
