@@ -26,6 +26,7 @@ class Training:
     def load_data(self, path_dir, label, apply_preprocessing_fire, segment):
         list_image = []
         list_label = []
+        i = 0
         for file in os.listdir(path_dir):
             image = cv2.imread(path_dir + file)
             if apply_preprocessing_fire:
@@ -36,10 +37,14 @@ class Training:
                 mat_points = self.segmentation.map_out(mask, image)
                 list = self.load_segment_image(mat_points, image)
                 for j in range(0, len(list)):
-                    image_64 = cv2.resize(list[j], (64, 64))
-                    list[j]=image_64
-                    list_image.append(list[j])
-                    list_label.append(label)
+                    if i < 220:
+                        image_64 = cv2.resize(list[j], (64, 64))
+                        list[j]=image_64
+                        list_image.append(list[j])
+                        list_label.append(label)
+                    else:
+                        return list_image, list_label
+                    i+=1
             else:
                 list_image.append(image)
                 list_label.append(label)
@@ -137,11 +142,11 @@ class Training:
     def generate_training(self, type_train_fire, segment):
         if(type_train_fire):
             path_train = "../resources/training/fire/train"
-            list_path_dir = [self.path_dir_image_fire, self.path_dir_image_fire_1]
+            list_path_dir = [self.path_dir_image_fire]
             (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_training(list_path_dir, self.label_fire, type_train_fire, segment)
         else:
             path_train = "../resources/training/smoke/train"
-            list_path_dir = [self.path_dir_image_smoke, self.path_dir_image_smoke_1]
+            list_path_dir = [self.path_dir_image_smoke]
             (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_training(list_path_dir, self.label_smoke, type_train_fire, segment)
         self.save_training(list_by_train, labels_by_train, list_by_test, labels_by_test, (-15, 3), (-10, 10), path_train)
 
@@ -167,7 +172,7 @@ class Training:
 if __name__ == '__main__':
     training = Training()
     # If type train is True, it will generate a train of FIRE, otherwise, of SMOKE
-    type_train_fire = False
-    segment = False
+    type_train_fire = True
+    segment = True
 
     training.generate_training(type_train_fire, segment)
