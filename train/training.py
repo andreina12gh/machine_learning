@@ -14,6 +14,7 @@ class Training:
         self.path_dir_image_smoke = "../resources/images/smoke/"
         self.path_dir_image_smoke_1 = "../resources/images/smoke_1/"
         self.path_dir_image_false_positive = "../resources/images/false_positive/"
+        self.path_dir_image_false_positive_1 = "../resources/images/false_positive_1/"
         self.preprocessing = Preprocessing()
         self.filter_gabor = FilterGabor()
         self.hog_descriptor = HogDescriptor()
@@ -37,7 +38,7 @@ class Training:
                 mat_points = self.segmentation.map_out(mask, image)
                 list = self.load_segment_image(mat_points, image)
                 for j in range(0, len(list)):
-                    if i < 300:
+                    if i >= 0:
                         image_64 = cv2.resize(list[j], (64, 64))
                         list[j]=image_64
                         list_image.append(list[j])
@@ -45,6 +46,7 @@ class Training:
                     else:
                         return list_image, list_label
                     i+=1
+
             else:
                 list_image.append(image)
                 list_label.append(label)
@@ -52,6 +54,7 @@ class Training:
                 image = self.preprocessing.highlight_smoke_features(image)
                 list_image.append(image)
                 list_label.append(label)'''
+        print i
         cv2.destroyAllWindows()
         return list_image, list_label
 
@@ -113,7 +116,7 @@ class Training:
 
     def generate_data_training(self, list_path_to_train, label, type_train, segment):
         (list_training, list_testing, labels_training, labels_testing) = self.get_list_training(list_path_to_train, label, type_train, segment)
-        (list_training_fp, list_testing_fp, labels_training_fp, labels_testing_fp) = self.get_list_training([self.path_dir_image_false_positive], self.label_false_positive, type_train, segment)
+        (list_training_fp, list_testing_fp, labels_training_fp, labels_testing_fp) = self.get_list_training([self.path_dir_image_false_positive, self.path_dir_image_false_positive_1], self.label_false_positive, type_train, segment)
         list_training = np.concatenate([list_training, list_training_fp])
         labels_training = np.concatenate([labels_training, labels_training_fp])
         list_testing = np.concatenate([list_testing, list_testing_fp])
@@ -142,7 +145,7 @@ class Training:
     def generate_training(self, type_train_fire, segment):
         if(type_train_fire):
             path_train = "../resources/training/fire/train"
-            list_path_dir = [self.path_dir_image_fire]
+            list_path_dir = [self.path_dir_image_fire, self.path_dir_image_fire_1]
             (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_training(list_path_dir, self.label_fire, type_train_fire, segment)
         else:
             path_train = "../resources/training/smoke/train"

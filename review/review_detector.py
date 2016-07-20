@@ -14,7 +14,7 @@ def testing_detected(path_video):
         _, frame = capture.read()
         frame = cv2.resize(frame, (640, 480))
         #comment the line of down if the image is readed automatically in the model of color BGR
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         if detect_segment:
             frame_detected = detector.detect_fire_segment(frame, load_train)
         else:
@@ -40,7 +40,7 @@ def testing_detected_smoke(path_video):
         _, frame = capture.read()
         frame = cv2.resize(frame, (640, 480))
         #comment the line of down if the image is readed automatically in the model of color BGR
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         '''if detect_segment:
             frame_detected = detector.detect_fire_segment(frame, load_train)
         else:
@@ -61,7 +61,7 @@ def testing_detected_smoke(path_video):
 
     cv2.destroyAllWindows()
 
-#testing_detected("/home/evelyn/Documents/Fabrica/Videos_e_imgenes/Videos_probar/escena6.mp4")
+testing_detected("/home/evelyn/Documents/Fabrica/Videos_e_imgenes/Videos_probar/escena6.mp4")
 #testing_detected_smoke("/home/evelyn/Documents/videosss/puente.mp4")
-testing_detected("/home/Mauri/Documents/videos/escena0.mp4")
+#testing_detected("/home/Mauri/Documents/videos/escena0.mp4")
 #testing_detected_smoke("/home/Mauri/Documents/videos/escena3.mp4")
