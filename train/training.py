@@ -37,7 +37,7 @@ class Training:
                 mat_points = self.segmentation.map_out(mask, image)
                 list = self.load_segment_image(mat_points, image)
                 for j in range(0, len(list)):
-                    if i < 220:
+                    if i < 300:
                         image_64 = cv2.resize(list[j], (64, 64))
                         list[j]=image_64
                         list_image.append(list[j])

@@ -10,7 +10,7 @@ class Detector:
         self.segmentation = Segmentation()
         self.model = cv2.SVM()
         self.path_train_fire_no_segmented = "../resources/training/fire/train_2.77777777778%.xml"
-        self.path_train_fire_segmented = "../resources/training/fire/train_12.5%.xml"
+        self.path_train_fire_segmented = "../resources/training/fire/train_12.0%.xml"
         self.path_train_smoke_no_segmented = "../resources/training/smoke/train_10.6060606061%.xml"
         self.LABEL_FIRE = 1
         self.LABEL_SMOKE = 2
