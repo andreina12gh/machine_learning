@@ -9,13 +9,15 @@ class Detector:
         self.hog = HogDescriptor()
         self.segmentation = Segmentation()
         self.model = cv2.SVM()
-        self.path_train_fire_no_segmented = "../resources/training/fire/train_2.77777777778%.xml"
-        self.path_train_fire_segmented = "../resources/training/fire/train_16.3855421687%.xml"
+        self.path_train_fire_segmented = "../resources/training/fire/train_8.03571428571%.xml"
+        self.path_train_fire_no_segmented = ""
+        #self.path_train_fire_segmented = "../resources/training/fire/train_9.5652173913%.xml"
         self.path_train_smoke_no_segmented = "../resources/training/smoke/train_10.6060606061%.xml"
         self.LABEL_FIRE = 1
         self.LABEL_SMOKE = 2
         self.COLOR_FIRE = (0,0,255)
         self.COLOR_SMOKE = (255, 0, 0)
+        self.j = 0
 
     def load_train(self, path_train):
         self.model.load(path_train)
@@ -31,6 +33,7 @@ class Detector:
                     result = self.model.predict(descriptors)
                     if result == label:
                         cv2.rectangle(image, (h, w), (h + step, w + step), color, 2)
+
         return image
 
     def detect_fire_segment(self, image, load_train=True):
@@ -53,6 +56,7 @@ class Detector:
         return image
 
     def get_submats(self, mat_points, image_no_background, image, label, color):
+        i = 0
         for (x, y, w, h) in mat_points:
             (x, w) = self.swap_points(x, w)
             (y, h) = self.swap_points(y, h)
@@ -62,7 +66,16 @@ class Detector:
                 [descriptors] = self.hog.get_list_hog_descriptors([subMat])
                 result = self.model.predict(descriptors)
                 if result == label:
+                    if self.j % 24 == 0:
+                        pass
+                        #cv2.imwrite("../Fuego/img_casa_"+str(i)+"_"+str(self.j)+".png", subMat)
                     cv2.rectangle(image, (x,y), (w,h), color,1)
+                else:
+                    if self.j % 24 == 0:
+                        pass
+                        #cv2.imwrite("../FalsosPositivos/img6_casa_"+str(i)+"_"+str(self.j)+".png", subMat)
+                i +=1
+                self.j += 1
         return image
 
     def swap_points(self, x1, x2):

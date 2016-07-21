@@ -30,7 +30,7 @@ class Training:
         i = 0
         for file in os.listdir(path_dir):
             image = cv2.imread(path_dir + file)
-            if apply_preprocessing_fire:
+            '''if apply_preprocessing_fire:
                 mask, image = self.preprocessing.cut_out_backgound(image)
             else:
                 image = self.preprocessing.highlight_smoke_features(image)
@@ -38,7 +38,7 @@ class Training:
                 mat_points = self.segmentation.map_out(mask, image)
                 list = self.load_segment_image(mat_points, image)
                 for j in range(0, len(list)):
-                    if i >= 0:
+                    if i < 350:
                         image_64 = cv2.resize(list[j], (64, 64))
                         list[j]=image_64
                         list_image.append(list[j])
@@ -47,9 +47,9 @@ class Training:
                         return list_image, list_label
                     i+=1
 
-            else:
-                list_image.append(image)
-                list_label.append(label)
+            else:'''
+            list_image.append(image)
+            list_label.append(label)
             ''''else:
                 image = self.preprocessing.highlight_smoke_features(image)
                 list_image.append(image)
@@ -176,6 +176,6 @@ if __name__ == '__main__':
     training = Training()
     # If type train is True, it will generate a train of FIRE, otherwise, of SMOKE
     type_train_fire = True
-    segment = True
+    segment = False
 
     training.generate_training(type_train_fire, segment)

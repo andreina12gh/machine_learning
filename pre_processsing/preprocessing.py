@@ -91,7 +91,6 @@ class Preprocessing:
         _, image_binary = cv2.threshold(layer, thresh_min, thresh_max, cv2.THRESH_BINARY)
         return image_binary
 
-
     def get_mask_brightness(self, image):
         image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         h, s, v = cv2.split(image_hsv)

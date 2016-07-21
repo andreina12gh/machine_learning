@@ -3,6 +3,7 @@ import numpy as np
 from detection.detector import Detector
 from pre_processsing.preprocessing import Preprocessing
 from pre_processsing.segmentation import Segmentation
+from numpy.linalg import inv
 
 def testing_detected(path_video):
     capture = cv2.VideoCapture(path_video)
@@ -10,6 +11,9 @@ def testing_detected(path_video):
     preprocessing = Preprocessing()
     load_train = True
     detect_segment = True
+    scalar = 255
+    video = cv2.VideoWriter("../resources/videos/video_escena0.avi",fourcc=cv2.cv.CV_FOURCC('m','p','4','v'),fps=10,frameSize=(640,480))
+
     while(1):
         _, frame = capture.read()
         frame = cv2.resize(frame, (640, 480))
@@ -19,14 +23,29 @@ def testing_detected(path_video):
             frame_detected = detector.detect_fire_segment(frame, load_train)
         else:
             frame_detected = detector.detect_fire(frame, load_train)
+
         cv2.imshow("Test", frame_detected)
+        video.write(frame_detected)
+        frame_mul = frame * scalar
+        b, g, r = cv2.split(frame_mul)
+        r_max = np.max(r)
+        g_max = np.max(g)
+        b_max = np.max(b)
+        print r_max, g_max, b_max
+        r = r*(scalar/r_max)
+        g = g*(scalar/g_max)
+        b = b*(scalar/b_max)
+        frame_mul = cv2.merge((r,g,b))
+        cv2.imshow("mul", frame_mul)
         load_train = False
         image_Res = preprocessing.get_image_brightness(frame)
-        cv2.imshow("Res", image_Res)
+        #cv2.imshow("Res", image_Res)
         k = cv2.waitKey(1)
         if k == 27:
+            video.release()
             break
-
+    capture.release()
+    video.release()
     cv2.destroyAllWindows()
 
 def testing_detected_smoke(path_video):
@@ -61,7 +80,8 @@ def testing_detected_smoke(path_video):
 
     cv2.destroyAllWindows()
 
-testing_detected("/home/evelyn/Documents/Fabrica/Videos_e_imgenes/Videos_probar/escena6.mp4")
+#testing_detected("/home/evelyn/Documents/videosss/puente.mp4")
+testing_detected("/home/evelyn/Documents/Fabrica/Videos_e_imgenes/Videos_probar/escena0.mp4")
 #testing_detected_smoke("/home/evelyn/Documents/videosss/puente.mp4")
 #testing_detected("/home/Mauri/Documents/videos/escena0.mp4")
 #testing_detected_smoke("/home/Mauri/Documents/videos/escena3.mp4")
