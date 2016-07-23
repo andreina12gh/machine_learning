@@ -9,8 +9,8 @@ class Detector:
         self.hog = HogDescriptor()
         self.segmentation = Segmentation()
         self.model = cv2.SVM()
-        self.path_train_fire_segmented = "../resources/training/fire/train_8.03571428571%.xml"
-        self.path_train_fire_no_segmented = ""
+        self.path_train_fire_segmented = "../resources/training/fire/train_6.94444444444%.xml"
+        self.path_train_fire_no_segmented = "../resources/training/fire/train_6.94444444444%.xml"
         #self.path_train_fire_segmented = "../resources/training/fire/train_9.5652173913%.xml"
         self.path_train_smoke_no_segmented = "../resources/training/smoke/train_10.6060606061%.xml"
         self.LABEL_FIRE = 1
@@ -33,7 +33,6 @@ class Detector:
                     result = self.model.predict(descriptors)
                     if result == label:
                         cv2.rectangle(image, (h, w), (h + step, w + step), color, 2)
-
         return image
 
     def detect_fire_segment(self, image, load_train=True):
@@ -47,12 +46,12 @@ class Detector:
         _, image_no_background = self.segmentation.segment(image)
         if load_train:
             self.load_train(self.path_train_fire_no_segmented)
-        image = self.sliding_window(image, image_no_background, self.LABEL_FIRE, self.COLOR_FIRE)
-        '''[descriptors] = self.hog.get_list_hog_descriptors([image_no_background])
+        #image = self.sliding_window(image, image_no_background, self.LABEL_FIRE, self.COLOR_FIRE)
+        [descriptors] = self.hog.get_list_hog_descriptors([image_no_background])
         result = self.model.predict(descriptors)
         if result == self.LABEL_FIRE:
             #cv2.rectangle(image, (10,10),(50,50),self.COLOR_FIRE, 1)
-            cv2.putText(image,"FUEGO", (20,20), cv2.FONT_HERSHEY_COMPLEX, 1.5, self.COLOR_FIRE)'''
+            cv2.putText(image,"FUEGO", (20,20), cv2.FONT_HERSHEY_COMPLEX, 1.5, self.COLOR_FIRE)
         return image
 
     def get_submats(self, mat_points, image_no_background, image, label, color):
@@ -68,12 +67,12 @@ class Detector:
                 if result == label:
                     if self.j % 24 == 0:
                         pass
-                        #cv2.imwrite("../Fuego/img_casa_"+str(i)+"_"+str(self.j)+".png", subMat)
+                        #cv2.imwrite("../Fuego/aimg########_"+str(i)+"_"+str(self.j)+".png", subMat)
                     cv2.rectangle(image, (x,y), (w,h), color,1)
                 else:
                     if self.j % 24 == 0:
                         pass
-                        #cv2.imwrite("../FalsosPositivos/img6_casa_"+str(i)+"_"+str(self.j)+".png", subMat)
+                        #cv2.imwrite("../FalsosPositivos/aimg##########_"+str(i)+"_"+str(self.j)+".png", subMat)
                 i +=1
                 self.j += 1
         return image
