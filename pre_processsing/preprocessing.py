@@ -14,7 +14,7 @@ class Preprocessing:
     def cut_out_backgound(self, image):
         mask = self.enhance_color(self.LOWER_RED, self.UPPER_RED, image)
         image_no_backgrund = cv2.bitwise_and(image, image, mask=mask)
-        return mask, image_no_backgrund
+        return mask, image#image_no_backgrund
 
     def enhance_color(self, lower, upper, image):
         image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)

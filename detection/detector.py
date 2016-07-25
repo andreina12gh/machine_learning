@@ -66,13 +66,11 @@ class Detector:
                 result = self.model.predict(descriptors)
                 if result == label:
                     if self.j % 24 == 0:
-                        pass
-                        #cv2.imwrite("../Fuego/aimg########_"+str(i)+"_"+str(self.j)+".png", subMat)
+                        cv2.imwrite("../Fuego/img0_"+str(i)+"_"+str(self.j)+".png", subMat)
                     cv2.rectangle(image, (x,y), (w,h), color,1)
                 else:
                     if self.j % 24 == 0:
-                        pass
-                        #cv2.imwrite("../FalsosPositivos/aimg##########_"+str(i)+"_"+str(self.j)+".png", subMat)
+                        cv2.imwrite("../FalsosPositivos/img0_"+str(i)+"_"+str(self.j)+".png", subMat)
                 i +=1
                 self.j += 1
         return image

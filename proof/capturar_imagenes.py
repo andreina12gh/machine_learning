@@ -1,7 +1,7 @@
 import cv2
 
-capture = cv2.VideoCapture("/home/evelyn/Downloads/VideosFalsosPositivos/video4.mp4")
-capture
+capture = cv2.VideoCapture("/media/evelyn/D4CB-805B/Videos/video4.crdownload")
+
 i = 0
 while(1):
 
@@ -10,7 +10,7 @@ while(1):
     cv2.imshow("Video", frame)
 
     if i % 26 == 0:
-        ruta = "/home/evelyn/Downloads/VideosFalsosPositivos/Imagenes/img_"+str(i)+"_4.png"
+        ruta = "/home/evelyn/Desktop/Imagenes/img_bariloche_"+str(i)+"_4.png"
         cv2.imwrite(ruta, frame)
 
     i+= 1

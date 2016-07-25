@@ -11,16 +11,16 @@ def testing_detected(path_video):
     detector = Detector()
     preprocessing = Preprocessing()
     load_train = True
-    detect_segment = True
+    detect_segment = False
     scalar = 255
     #video = cv2.VideoWriter("../resources/videos/video_escena0.avi",fourcc=cv2.cv.CV_FOURCC('m','p','4','v'),fps=10,frameSize=(640,480))
 
     while(1):
         _, frame = capture.read()
         frame = cv2.resize(frame, (640, 640))
-        res_1 = detector.detect_fire_segment(frame,load_train)
+        res_1 = detector.detect_fire_segment(frame, load_train)
         cv2.imshow("original", res_1)
-        frame = quitar_blanco_clahe(frame)
+        '''frame = quitar_blanco_clahe(frame)
         #comment the line of down if the image is readed automatically in the model of color BGR
         #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         if detect_segment:
@@ -29,7 +29,7 @@ def testing_detected(path_video):
             frame_detected = detector.detect_fire(frame, load_train)
 
         cv2.imshow("Test", frame_detected)
-        #video.write(frame_detected)
+        #video.write(frame_detected)'''
         '''frame_mul = frame * scalar
         b, g, r = cv2.split(frame_mul)
         r_max = np.max(r)
