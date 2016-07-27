@@ -9,7 +9,7 @@ class Detector:
         self.hog = HogDescriptor()
         self.segmentation = Segmentation()
         self.model = cv2.SVM()
-        self.path_train_fire_segmented = "../resources/training/fire/train_6.94444444444%.xml"
+        self.path_train_fire_segmented = "../resources/training/fire/train_1.35135135135%.xml"
         self.path_train_fire_no_segmented = "../resources/training/fire/train_6.94444444444%.xml"
         #self.path_train_fire_segmented = "../resources/training/fire/train_9.5652173913%.xml"
         self.path_train_smoke_no_segmented = "../resources/training/smoke/train_10.6060606061%.xml"
@@ -66,11 +66,13 @@ class Detector:
                 result = self.model.predict(descriptors)
                 if result == label:
                     if self.j % 24 == 0:
-                        cv2.imwrite("../Fuego/img0_"+str(i)+"_"+str(self.j)+".png", subMat)
+                        pass
+                        #cv2.imwrite("../Fuego/img0_"+str(i)+"_"+str(self.j)+".png", subMat)
                     cv2.rectangle(image, (x,y), (w,h), color,1)
                 else:
                     if self.j % 24 == 0:
-                        cv2.imwrite("../FalsosPositivos/img0_"+str(i)+"_"+str(self.j)+".png", subMat)
+                        pass
+                        #cv2.imwrite("../FalsosPositivos/img0_"+str(i)+"_"+str(self.j)+".png", subMat)
                 i +=1
                 self.j += 1
         return image

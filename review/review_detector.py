@@ -18,15 +18,15 @@ def testing_detected(path_video):
     while(1):
         _, frame = capture.read()
         frame = cv2.resize(frame, (640, 640))
-        res_1 = detector.detect_fire_segment(frame, load_train)
-        cv2.imshow("original", res_1)
-        '''frame = quitar_blanco_clahe(frame)
-        #comment the line of down if the image is readed automatically in the model of color BGR
-        #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         if detect_segment:
             frame_detected = detector.detect_fire_segment(frame, load_train)
         else:
             frame_detected = detector.detect_fire(frame, load_train)
+
+        cv2.imshow("original", frame_detected)
+        '''frame = quitar_blanco_clahe(frame)
+        #comment the line of down if the image is readed automatically in the model of color BGR
+        #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
         cv2.imshow("Test", frame_detected)
         #video.write(frame_detected)'''
@@ -145,7 +145,7 @@ def quitar_blanco_clahe(frame):
     return  res
 
 #quitar_blanco("/home/evelyn/Documents/videosss/puente.mp4")
-testing_detected("/home/evelyn/Documents/videosss/puente.mp4")
+testing_detected("/home/evelyn/Desktop/Videos/video4.mp4")
 #testing_detected("/home/evelyn/Documents/Fabrica/Videos_e_imgenes/Videos_probar/escena6.mp4")
 #testing_detected_smoke("/home/evelyn/Documents/videosss/puente.mp4")
 #testing_detected("/home/Mauri/Documents/videos/escena0.mp4")
