@@ -4,7 +4,7 @@ from detection.detector import Detector
 from pre_processsing.preprocessing import Preprocessing
 from pre_processsing.segmentation import Segmentation
 from numpy.linalg import inv
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 
 def testing_detected(path_video):
     capture = cv2.VideoCapture(path_video)
@@ -24,43 +24,6 @@ def testing_detected(path_video):
             frame_detected = detector.detect_fire(frame, load_train)
 
         cv2.imshow("original", frame_detected)
-        '''frame = quitar_blanco_clahe(frame)
-        #comment the line of down if the image is readed automatically in the model of color BGR
-        #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-
-        cv2.imshow("Test", frame_detected)
-        #video.write(frame_detected)'''
-        '''frame_mul = frame * scalar
-        b, g, r = cv2.split(frame_mul)
-        r_max = np.max(r)
-        g_max = np.max(g)
-        b_max = np.max(b)
-        print r_max, g_max, b_max
-        r_1 = r*(scalar/r_max)
-        g_1 = g*(scalar/g_max)
-        b_1 = b*(scalar/b_max)
-        suma = r +g+b
-        r = r*inv(suma)
-        g = g *inv(suma)
-        b = b*inv(suma)
-        print "r",r
-        print "g",g
-        print "b",b
-        frame_mul = cv2.merge((r_1,g_1,b_1))
-        frame_new = cv2.merge((r, g, b))
-        cv2.imshow("mul", frame_mul)
-        cv2.imshow("res", frame_new)
-        load_train = False
-        image_Res = preprocessing.get_image_brightness(frame)'''
-        '''
-        b, g, r = cv2.split(frame_detected)
-        frame_detected_hsv = cv2.cvtColor(frame_detected, cv2.COLOR_BGR2HSV)
-        h, s, v = cv2.split(frame_detected_hsv)
-        print "h", h
-        b = b -h
-        g = g -h
-        r = r -h
-        frame_detected = cv2.merge((b,g,r))'''
         #cv2.imshow("Res", image_Res)
         k = cv2.waitKey(1)
         if k == 27:
@@ -135,17 +98,9 @@ def quitar_blanco_equal(frame):
     res =cv2.merge((res_b, res_g, res_r))
     return res
 
-def quitar_blanco_clahe(frame):
-    b, g,r = cv2.split(frame)
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-    cl1 = clahe.apply(b)
-    cl2 = clahe.apply(g)
-    cl3 = clahe.apply(r)
-    res =cv2.merge((cl1,cl2,cl3))
-    return  res
-
 #quitar_blanco("/home/evelyn/Documents/videosss/puente.mp4")
-testing_detected("/home/evelyn/Desktop/Videos/video4.mp4")
+#testing_detected("/home/evelyn/Desktop/Videos/video4.mp4")
+testing_detected("/home/andreina/Videos/videosss/puente.mp4")
 #testing_detected("/home/evelyn/Documents/Fabrica/Videos_e_imgenes/Videos_probar/escena6.mp4")
 #testing_detected_smoke("/home/evelyn/Documents/videosss/puente.mp4")
 #testing_detected("/home/Mauri/Documents/videos/escena0.mp4")

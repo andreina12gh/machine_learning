@@ -117,3 +117,12 @@ class Preprocessing:
         else:
             cv2.putText(image, data,(20,20), cv2.FONT_HERSHEY_COMPLEX, 1.5, color)
         return image
+
+    def equalize_clahe(self, image):
+        b, g, r = cv2.split(image)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        cl1 = clahe.apply(b)
+        cl2 = clahe.apply(g)
+        cl3 = clahe.apply(r)
+        result = cv2.merge((cl1, cl2, cl3))
+        return result

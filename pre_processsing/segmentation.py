@@ -12,8 +12,9 @@ class Segmentation:
     def segment(self, image):
         mask, image_no_background = self.pre_processing.cut_out_backgound(image)
         image_hue = self.pre_processing.get_mask_brightness(image_no_background)
-        cv2.imshow("img_hue", image_no_background)
+        #cv2.imshow("img_hue", image_no_background)
         mat_points = self.map_out(mask, image_no_background)
+        image = self.pre_processing.equalize_clahe(image)
         return mat_points, image#image_no_background
 
     def map_out(self, img_bin, image):

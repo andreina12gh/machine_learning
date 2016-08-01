@@ -16,6 +16,8 @@ class Training:
         self.path_dir_image_false_positive = "../resources/images/false_positive/"
         self.path_dir_image_false_positive_1 = "../resources/images/false_positive_1/"
         self.path_dir_image_false_positive_fire = "../resources/images/false_positive_2/"
+        self.num_imgs_pos = 0
+        self.num_imgs_neg = 0
         self.preprocessing = Preprocessing()
         self.filter_gabor = FilterGabor()
         self.hog_descriptor = HogDescriptor()
@@ -32,6 +34,7 @@ class Training:
         for file in os.listdir(path_dir):
             image = cv2.imread(path_dir + file)
             if apply_preprocessing_fire:
+                image = self.preprocessing.equalize_clahe(image)
                 mask, image = self.preprocessing.cut_out_backgound(image)
             else:
                 image = self.preprocessing.highlight_smoke_features(image)
@@ -110,7 +113,6 @@ class Training:
 
 
     def generate_data_descriptor_training(self, path_dir, label, state, segment):
-        print "genr", path_dir
         list_image, list_label = self.load_data(path_dir, label, state, segment)
         list_descriptor = self.hog_descriptor.get_list_hog_descriptors(list_image)
         (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.split_data_by_train(list_descriptor, list_label)
@@ -119,7 +121,9 @@ class Training:
 
     def generate_data_training(self, list_path_to_train, label, type_train, segment):
         (list_training, list_testing, labels_training, labels_testing) = self.get_list_training(list_path_to_train, label, type_train, segment)
+        self.num_imgs_pos = len(list_training)
         (list_training_fp, list_testing_fp, labels_training_fp, labels_testing_fp) = self.get_list_training([self.path_dir_image_false_positive, self.path_dir_image_false_positive_1], self.label_false_positive, type_train, segment)
+        self.num_imgs_neg = len(list_testing_fp)
         list_training = np.concatenate([list_training, list_training_fp])
         labels_training = np.concatenate([labels_training, labels_training_fp])
         list_testing = np.concatenate([list_testing, list_testing_fp])
@@ -147,13 +151,16 @@ class Training:
 
     def generate_training(self, type_train_fire, segment):
         if(type_train_fire):
-            path_train = "../resources/training/fire/train"
+            path_train = "../resources/training/fire/train_"
             list_path_dir = [self.path_dir_image_fire, self.path_dir_image_fire_1]
             (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_training(list_path_dir, self.label_fire, type_train_fire, segment)
         else:
             path_train = "../resources/training/smoke/train"
             list_path_dir = [self.path_dir_image_smoke]
             (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_training(list_path_dir, self.label_smoke, type_train_fire, segment)
+        name_pos = "pos_" + str(self.num_imgs_pos) + "_"
+        name_neg = "neg_" + str(self.num_imgs_neg) + "_"
+        path_train = path_train + name_pos + name_neg
         self.save_training(list_by_train, labels_by_train, list_by_test, labels_by_test, (-15, 3), (-10, 10), path_train)
 
 
@@ -170,7 +177,7 @@ class Training:
                     print 'error: %.2f %%' % (error * 100)
                     val_gamma = gamma
                     val_C = C
-        path_train = path_train+"_"+str(minimum_error*100)+"%.xml"
+        path_train = path_train+"_"+str(minimum_error*100)+"%_C" + str(C) + "_gamma_" + str(gamma) + ".xml"
         self.train(list_descriptor, list_label, list_descriptor_test, list_label_test, val_gamma, val_C, path_train, minimum_error)
         os.remove(path_default)
 
@@ -179,6 +186,6 @@ if __name__ == '__main__':
     training = Training()
     # If type train is True, it will generate a train of FIRE, otherwise, of SMOKE
     type_train_fire = True
-    segment = False
+    segment = True
 
     training.generate_training(type_train_fire, segment)
