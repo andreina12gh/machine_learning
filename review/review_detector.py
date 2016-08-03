@@ -21,7 +21,7 @@ def testing_detected(path_video):
         if detect_segment:
             frame_detected = detector.detect_fire_segment(frame, load_train)
         else:
-            frame_detected = detector.detect_fire(frame, load_train)
+            frame_detected = detector.detect_multiscale(frame, load_train)
 
         cv2.imshow("original", frame_detected)
         #cv2.imshow("Res", image_Res)
@@ -100,7 +100,7 @@ def quitar_blanco_equal(frame):
 
 #quitar_blanco("/home/evelyn/Documents/videosss/puente.mp4")
 #testing_detected("/home/evelyn/Desktop/Videos/video4.mp4")
-testing_detected("/home/andreina/Videos/videosss/puente.mp4")
+testing_detected("/home/andreina/Videos/videosss/Videos_probar/escena3.mp4")
 #testing_detected("/home/evelyn/Documents/Fabrica/Videos_e_imgenes/Videos_probar/escena6.mp4")
 #testing_detected_smoke("/home/evelyn/Documents/videosss/puente.mp4")
 #testing_detected("/home/Mauri/Documents/videos/escena0.mp4")

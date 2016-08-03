@@ -10,7 +10,7 @@ class Detector:
         self.segmentation = Segmentation()
         self.model = cv2.SVM()
         self.path_train_fire_segmented = "../resources/training/fire/train_1.35135135135%.xml"
-        self.path_train_fire_no_segmented = "../resources/training/fire/train_pos_0_neg_0__6.25%_C512_gamma_4.xml"
+        self.path_train_fire_no_segmented = "../resources/training/fire/train_1.66666666667%.xml"
         #self.path_train_fire_segmented = "../resources/training/fire/train_9.5652173913%.xml"
         self.path_train_smoke_no_segmented = "../resources/training/smoke/train_10.6060606061%.xml"
         self.LABEL_FIRE = 1
@@ -22,17 +22,48 @@ class Detector:
     def load_train(self, path_train):
         self.model.load(path_train)
 
-    def sliding_window(self, image, preprocessed_image, label, color, step = 80):
+    #review this section in the detection of smoke
+    def sliding_window_descriptor(self, image, preprocessed_image, label, color, step = 16):
+        height = 64
+        width = 64
+        descriptor = self.hog.get_list_hog_descriptors([image])
+        if(step < height and step < width):
+            for i in range(0, 7):
+                for j in range(0, 7):
+                    for window in range(0, width - step, step):
+                        #sub_window = mat_desc[i][j]
+                        #predict usind svm directly
+                        pass
+            image_detect = self.draw_detection(image, [(0,0,10,10)],[descriptor], label, color)
+        return image_detect
+
+    def sliding_window(self, image, preprocessed_image, label, color, step = 100):
         (height, width, _) = preprocessed_image.shape
         if(step < height and step < width):
-            for h in range(0, height - step, step):
-                for w in range(0, width - step, step):
-                    sub_image = preprocessed_image[h:h + step, w:w + step]
-                    sub_image = cv2.resize(sub_image, (64, 64))
-                    [descriptors] = self.hog.get_list_hog_descriptors([sub_image])
-                    result = self.model.predict(descriptors)
-                    if result == label:
-                        cv2.rectangle(image, (h, w), (h + step, w + step), color, 2)
+            list_image = []
+            stop = len(image) / 2
+            for block_size in range(step, stop, 50):
+                for h in range(0, height - block_size, block_size):
+                    for w in range(0, width - block_size, block_size):
+                        sub_image = preprocessed_image[h:h + block_size, w:w + block_size]
+                        sub_image = cv2.resize(sub_image, (64, 64))
+                        list_image.append(sub_image)
+                        [descriptors] = self.hog.get_list_hog_descriptors([sub_image])
+                        result = self.model.predict(descriptors)
+                        if result == label:
+                            cv2.rectangle(image, (h, w), (h + block_size, w + block_size), color, 2)
+                color = (255,0,0)
+        return image
+
+    def draw_detection(self, image, list_pos, list_descriptor, label, color):
+        for i in range(0, len(list_descriptor)):
+            descriptor = list_descriptor[i]
+            print "descriptor: ", str(np.array(descriptor).shape), descriptor
+            pos = list_pos[i]
+            (x,y,w,h) = pos
+            result = self.model.predict(descriptor)
+            if result == label:
+                cv2.rectangle(image, (x, y), (w, h), color, 2)
         return image
 
     def detect_fire_segment(self, image, load_train=True):
@@ -41,6 +72,14 @@ class Detector:
             self.load_train(self.path_train_fire_segmented)
         detected_image = self.get_submats(mat_points, image_no_background, image, self.LABEL_FIRE, self.COLOR_FIRE)
         return detected_image
+
+    def detect_multiscale(self, image, load_train=True):
+        #_, image_no_background = self.segmentation.segment(image)
+        if load_train:
+            self.load_train(self.path_train_fire_no_segmented)
+        #image = self.sliding_window(image, image_no_background, self.LABEL_FIRE, self.COLOR_FIRE)
+        image = self.sliding_window(image, image, self.LABEL_FIRE, self.COLOR_FIRE)
+        return image
 
     def detect_fire(self, image, load_train=True):
         _, image_no_background = self.segmentation.segment(image)
