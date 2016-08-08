@@ -100,8 +100,8 @@ class Preprocessing:
     def get_image_brightness(self, image):
         mask_layer_v = self.get_mask_brightness(image)
         image_no_background = cv2.bitwise_and(image, image, mask=mask_layer_v)
-        _, image_no_background = self.cut_out_backgound(image_no_background)
-        return image_no_background
+        mask, image_no_background = self.cut_out_backgound(image_no_background)
+        return mask, image_no_background
 
     def draw_image(self, image, type, data, color):
         #if type = 1 is an rectangle
@@ -126,3 +126,6 @@ class Preprocessing:
         cl3 = clahe.apply(r)
         result = cv2.merge((cl1, cl2, cl3))
         return result
+
+    def difuminate(self, image, ksize=(7,7)):
+        return cv2.blur(image, ksize)

@@ -11,26 +11,28 @@ def testing_detected(path_video):
     detector = Detector()
     preprocessing = Preprocessing()
     load_train = True
-    detect_segment = False
+    detect_segment = True
     scalar = 255
-    #video = cv2.VideoWriter("../resources/videos/video_escena0.avi",fourcc=cv2.cv.CV_FOURCC('m','p','4','v'),fps=10,frameSize=(640,480))
-
+    video = cv2.VideoWriter("../resources/videos/video_escena1.avi",fourcc=cv2.cv.CV_FOURCC('m','p','4','v'),fps=10,frameSize=(640,480))
+    i = 0
     while(1):
         _, frame = capture.read()
-        frame = cv2.resize(frame, (640, 640))
+        frame = cv2.resize(frame, (640, 480))
         if detect_segment:
             frame_detected = detector.detect_fire_segment(frame, load_train)
         else:
             frame_detected = detector.detect_fire(frame, load_train)
-
+        if i>50:
+            video.write(frame_detected)
         cv2.imshow("original", frame_detected)
         #cv2.imshow("Res", image_Res)
-        k = cv2.waitKey(1)
+        i += 1
+        k = cv2.waitKey(30)
         if k == 27:
             #video.release()
             break
     capture.release()
-    #video.release()
+    video.release()
     cv2.destroyAllWindows()
 
 def testing_detected_smoke(path_video):
@@ -98,10 +100,12 @@ def quitar_blanco_equal(frame):
     res =cv2.merge((res_b, res_g, res_r))
     return res
 
-#quitar_blanco("/home/evelyn/Documents/videosss/puente.mp4")
+#quitar_blanco("/home/evelyn/Documents/videosss/
+#testing_detected("/home/evelyn/Documents/videosss/puente.mp4")
 #testing_detected("/home/evelyn/Desktop/Videos/video4.mp4")
-testing_detected("/home/andreina/Videos/videosss/puente.mp4")
-#testing_detected("/home/evelyn/Documents/Fabrica/Videos_e_imgenes/Videos_probar/escena6.mp4")
+#testing_detected("/home/andreina/Videos/videosss/puente.mp4")
+#testing_detected("/home/andreina/Videos/videosss/Videos_probar/escena0.mp4")
+testing_detected("/home/evelyn/Documents/Fabrica/Videos_e_imgenes/Videos_probar/escena0.mp4")
 #testing_detected_smoke("/home/evelyn/Documents/videosss/puente.mp4")
 #testing_detected("/home/Mauri/Documents/videos/escena0.mp4")
 #testing_detected_smoke("/home/Mauri/Documents/videos/escena3.mp4")

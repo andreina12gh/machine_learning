@@ -9,10 +9,10 @@ class Detector:
         self.hog = HogDescriptor()
         self.segmentation = Segmentation()
         self.model = cv2.SVM()
-        self.path_train_fire_segmented = "../resources/training/fire/train_1.35135135135%.xml"
-        self.path_train_fire_no_segmented = "../resources/training/fire/train_pos_0_neg_0__6.25%_C512_gamma_4.xml"
+        self.path_train_fire_segmented = "../resources/training/fire/train_neq_pos_460_neg_51__16.339869281%_C512_gamma_4.xml"
+        self.path_train_fire_no_segmented = "../resources/training/fire/train_neq_n_spos_505_neg_57__2.63157894737%_C0.0009765625_gamma_0.0625.xml"
         #self.path_train_fire_segmented = "../resources/training/fire/train_9.5652173913%.xml"
-        self.path_train_smoke_no_segmented = "../resources/training/smoke/train_10.6060606061%.xml"
+        self.path_train_smoke_no_segmented = "../resources/training/smoke/train_6.94444444444%.xml"
         self.LABEL_FIRE = 1
         self.LABEL_SMOKE = 2
         self.COLOR_FIRE = (0,0,255)

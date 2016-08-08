@@ -18,7 +18,7 @@ def w2d(img, mode='haar', level=1):
     #cv2.destroyAllWindows()
 #w2d("/home/evelyn/Desktop/organizar/imgEduardo.png", 'db1', 7)
 
-capture = cv2.VideoCapture("/home/evelyn/Documents/videosss/casa.mp4")
+capture = cv2.VideoCapture("/home/evelyn/Documents/videosss/puente.mp4")
 while(1):
     _, frame = capture.read()
     frame = cv2.resize(frame, (640, 480))

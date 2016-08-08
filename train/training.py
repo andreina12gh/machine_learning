@@ -34,8 +34,10 @@ class Training:
         for file in os.listdir(path_dir):
             image = cv2.imread(path_dir + file)
             if apply_preprocessing_fire:
+                image = self.preprocessing.difuminate(image)
                 image = self.preprocessing.equalize_clahe(image)
-                mask, image = self.preprocessing.cut_out_backgound(image)
+                mask, image = self.preprocessing.get_image_brightness(image)
+
             else:
                 image = self.preprocessing.highlight_smoke_features(image)
             if segment:
@@ -122,7 +124,7 @@ class Training:
     def generate_data_training(self, list_path_to_train, label, type_train, segment):
         (list_training, list_testing, labels_training, labels_testing) = self.get_list_training(list_path_to_train, label, type_train, segment)
         self.num_imgs_pos = len(list_training)
-        (list_training_fp, list_testing_fp, labels_training_fp, labels_testing_fp) = self.get_list_training([self.path_dir_image_false_positive, self.path_dir_image_false_positive_1], self.label_false_positive, type_train, segment)
+        (list_training_fp, list_testing_fp, labels_training_fp, labels_testing_fp) = self.get_list_training([self.path_dir_image_false_positive_1, self.path_dir_image_false_positive_fire], self.label_false_positive, type_train, segment)
         self.num_imgs_neg = len(list_testing_fp)
         list_training = np.concatenate([list_training, list_training_fp])
         labels_training = np.concatenate([labels_training, labels_training_fp])
@@ -151,7 +153,7 @@ class Training:
 
     def generate_training(self, type_train_fire, segment):
         if(type_train_fire):
-            path_train = "../resources/training/fire/train_"
+            path_train = "../resources/training/fire/train_neq_seg_"
             list_path_dir = [self.path_dir_image_fire, self.path_dir_image_fire_1]
             (list_by_train, list_by_test, labels_by_train, labels_by_test) = self.generate_data_training(list_path_dir, self.label_fire, type_train_fire, segment)
         else:
@@ -177,6 +179,7 @@ class Training:
                     print 'error: %.2f %%' % (error * 100)
                     val_gamma = gamma
                     val_C = C
+        gamma, C, error = self.train(list_descriptor, list_label, list_descriptor_test, list_label_test, gamma, C, path_default, minimum_error)
         path_train = path_train+"_"+str(minimum_error*100)+"%_C" + str(C) + "_gamma_" + str(gamma) + ".xml"
         self.train(list_descriptor, list_label, list_descriptor_test, list_label_test, val_gamma, val_C, path_train, minimum_error)
         os.remove(path_default)
